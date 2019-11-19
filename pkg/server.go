@@ -12,7 +12,7 @@ type timeSyncServer struct {
 func (s timeSyncServer) GetServerTime(context.Context, *GetServerTimeParams) (*ServerTime, error) {
 	log := logrus.WithField("method", "GetServerTime")
 	utcNowNano := time.Now().UTC().UnixNano()
-	log.Info("current server time=%v", utcNowNano)
+	log.Infof("current server time=%v", utcNowNano)
 	serverTime:= ServerTime{
 		Ts: utcNowNano,
 	}

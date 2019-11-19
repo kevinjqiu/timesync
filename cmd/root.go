@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/kevinjqiu/timesync/pkg"
 	"github.com/sirupsen/logrus"
@@ -9,7 +8,6 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"os"
-	"time"
 )
 
 var serverFlags struct {
@@ -31,12 +29,12 @@ func newServerCobraCommand() *cobra.Command {
 		Aliases: []string{"s"},
 		Short:   "Run server",
 		Run: func(cmd *cobra.Command, args []string) {
-
 			lis, err := net.Listen("tcp", serverFlags.bind)
 			if err != nil {
 				logrus.Fatalf("failed to listen: %v", err)
 				return
 			}
+			logrus.Infof("server running on %v", serverFlags.bind)
 
 			grpcServer := grpc.NewServer()
 			pkg.RegisterTimeSyncServer(grpcServer, pkg.NewServer())
@@ -60,18 +58,8 @@ func newClientCobraCommand() *cobra.Command {
 			}
 			defer conn.Close()
 
-			client := pkg.NewTimeSyncClient(conn)
-			t1 := time.Now().UTC().UnixNano()
-			serverTime, err := client.GetServerTime(context.Background(), &pkg.GetServerTimeParams{})
-			t2 := time.Now().UTC().UnixNano()
-
-			if err != nil {
-				logrus.Fatal(err)
-			}
-			syncedTime := serverTime.Ts + (t2-t1)/2
-			logrus.Infof("Server time:  %v", serverTime.Ts)
-			logrus.Infof("RTT:          %v", time.Duration(t2-t1))
-			logrus.Infof("Sync'ed time: %v", syncedTime)
+			client := pkg.NewClient(pkg.NewTimeSyncClient(conn))
+			client.Sync()
 		},
 	}
 

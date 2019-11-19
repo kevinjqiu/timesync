@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pkg;
+
+message ServerTime {
+    int64 ts = 1;
+}
+
+message GetServerTimeParams {
+
+}
+
+service TimeSync {
+    rpc GetServerTime(GetServerTimeParams) returns (ServerTime) {}
+}
